@@ -13,6 +13,8 @@
 
 # Written by Zhichao Zhou, zczhou2017@gmail.com 
 # July, 2019
+# Updated hardcoded paths by Andreea-Mihaela Mlesnita, mlesnitaanda@gmail.com
+# September, 2026
 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -82,8 +84,18 @@ use File::Copy;
 	-tax       or -taxonomy        [string]  To calculate MW-score contribution of microbial groups at the resolution of which taxonomical level (default: "phylum"; other options: "class", "order", "family", "genus", "species", and "bin" (MAG itself))
 	-gtdbtk-dir or -gtdb             [string]  The output folder of a GTDB-Tk "classify_wf" run performed beforehand. Its gtdbtk.bac120.summary.tsv and/or gtdbtk.ar53.summary.tsv are used and GTDB-Tk is not run. If this option is not given, GTDB-Tk is run as before; note that the pinned gtdbtk=2.3.2 supports GTDB releases up to R214, so a newer GTDB database requires this option.
 	-o         or -output          [string]  The METABOLIC output folder (default: current address)
+	-db-dir    or -database-directory [string] The directory containing the METABOLIC databases (METABOLIC_hmm_db, kofam_database, dbCAN2, MEROPS, METABOLIC_template_and_database). Defaults to the directory this script lives in, so existing installs keep working unchanged; set this (or the METABOLIC_DB_DIR environment variable) to point at an externally managed database directory instead, e.g. in a bioconda/container install.
+	-download-db                   [flag]    Download and set up the METABOLIC databases into -db-dir, then exit without running an analysis. Safe to re-run: each database is skipped if already present. The options below let each source be re-pointed at an internal mirror or pre-staged file (URL or local path).
+	-kofam-ko-list-url              [string]  URL for KofamKOALA's ko_list.gz (default: ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz)
+	-kofam-profiles-url             [string]  URL for KofamKOALA's profiles.tar.gz (default: ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz)
+	-dbcan-hmm-url                  [string]  URL for the dbCAN2 dbCAN-fam-HMMs.txt (default: the dbCAN2 v14 HMM database)
+	-merops-url                     [string]  URL for the MEROPS pepunit.lib (default: the current MEROPS release)
+	-metabolic-hmm-db-source        [string]  URL or local path for METABOLIC_hmm_db.tgz (default: the copy bundled next to this script)
+	-template-db-source             [string]  URL or local path for METABOLIC_template_and_database.tgz (default: the copy bundled next to this script)
+	-all-module-ko-ids-source       [string]  URL or local path for All_Module_KO_ids.txt (default: the copy bundled next to this script)
+	-test-files-dir                 [string]  The directory containing the METABOLIC test dataset (default: METABOLIC_test_files next to this script). The upstream Figshare link for this dataset can only be downloaded via a browser, not from the CLI, so if you don't already have it, fetch it manually, unzip it, and point this at wherever you put it. Download link: https://figshare.com/ndownloader/files/43500597
 	-test                          [string]  The option to test the performance of METABOLIC-G by 5 genomes; "true" or "false" to run the test option. You can use the -cpu option in addition to the -test option to specify how many cpus to use.
-	
+
 =head1 INSTRUCTIONS
 
 	GitHub: https://github.com/AnantharamanLab/METABOLIC
@@ -120,8 +132,18 @@ my $sequencing_type = "illumina"; # The sequencing type of input omics reads
 my $output = `pwd`; # The output folder 
 my $taxonomy = "phylum"; # The taxonomy level to calculate MW-score table
 my $gtdbtk_dir; # The output folder of a GTDB-Tk run performed beforehand
-my $version="METABOLIC-C.pl v4.0";
+my $version="METABOLIC-C.pl v4.0-patched";
 my $test = "false";
+my $test_files_dir = "$METABOLIC_dir/METABOLIC_test_files"; # Directory containing the METABOLIC test dataset, used by -test true. Override if you downloaded it manually via a browser -- the upstream Figshare link cannot be fetched from the CLI.
+my $db_dir; # The directory containing the METABOLIC databases (defaults to $METABOLIC_dir below)
+my $download_db; # Flag: download/set up the databases into $db_dir, then exit
+my $kofam_ko_list_url = 'ftp://ftp.genome.jp/pub/db/kofam/ko_list.gz';
+my $kofam_profiles_url = 'ftp://ftp.genome.jp/pub/db/kofam/profiles.tar.gz';
+my $dbcan_hmm_url = 'https://pro.unl.edu/dbCAN2/download_file.php?file=Databases/dbCAN-old-UGA/dbCAN-fam-HMMs.txt.v14';
+my $merops_url = 'https://ftp.ebi.ac.uk/pub/databases/merops/current_release/pepunit.lib';
+my $metabolic_hmm_db_source; # default: METABOLIC_hmm_db.tgz bundled next to this script
+my $template_db_source; # default: METABOLIC_template_and_database.tgz bundled next to this script
+my $all_module_ko_ids_source; # default: All_Module_KO_ids.txt bundled next to this script
 
 GetOptions(
 	'cpu|t=i' => \$cpu_numbers,
@@ -136,51 +158,78 @@ GetOptions(
 	'taxonomy|tax=s' => \$taxonomy,
 	'gtdbtk-dir|gtdb=s' => \$gtdbtk_dir,
 	'output|o=s' => \$output,
+	'database-directory|db-dir=s' => \$db_dir,
+	'download-db' => \$download_db,
+	'kofam-ko-list-url=s' => \$kofam_ko_list_url,
+	'kofam-profiles-url=s' => \$kofam_profiles_url,
+	'dbcan-hmm-url=s' => \$dbcan_hmm_url,
+	'merops-url=s' => \$merops_url,
+	'metabolic-hmm-db-source=s' => \$metabolic_hmm_db_source,
+	'template-db-source=s' => \$template_db_source,
+	'all-module-ko-ids-source=s' => \$all_module_ko_ids_source,
+	'test-files-dir=s' => \$test_files_dir,
 	'help|h' => sub{system('perldoc', $0); exit;},
 	'v|version'=>sub{print $version."\n"; exit;},
 	'test=s' => \$test
 ) or die("Getting options from the command line failed, please check your options");
 
+# Resolve the database directory: -db-dir, then METABOLIC_DB_DIR env var,
+# then fall back to the script's own directory (backward-compatible default).
+$db_dir = $ENV{METABOLIC_DB_DIR} if (!$db_dir and $ENV{METABOLIC_DB_DIR});
+$db_dir = $METABOLIC_dir if (!$db_dir);
+$db_dir = File::Spec->rel2abs($db_dir);
+
+$metabolic_hmm_db_source = "$METABOLIC_dir/METABOLIC_hmm_db.tgz" if (!$metabolic_hmm_db_source);
+$template_db_source = "$METABOLIC_dir/METABOLIC_template_and_database.tgz" if (!$template_db_source);
+$all_module_ko_ids_source = "$METABOLIC_dir/All_Module_KO_ids.txt" if (!$all_module_ko_ids_source);
+
+if ($download_db){
+	_download_databases($db_dir);
+	exit;
+}
+
+_check_db_dir($db_dir);
+
 ## Pre-required files and documents
  # METABOLIC hmm database files
- my $METABOLIC_hmm_db_address = "$METABOLIC_dir/METABOLIC_hmm_db";
- 
+ my $METABOLIC_hmm_db_address = "$db_dir/METABOLIC_hmm_db";
+
  # KofamKOALA hmm database files
  # Link: ftp://ftp.genome.jp/pub/db/kofam/
- my $kofam_db_address = "$METABOLIC_dir/kofam_database/profiles";
- my $kofam_db_KO_list = "$METABOLIC_dir/kofam_database/ko_list";
- 
+ my $kofam_db_address = "$db_dir/kofam_database/profiles";
+ my $kofam_db_KO_list = "$db_dir/kofam_database/ko_list";
+
  # Input hmm information table as a template
- my $hmm_table_temp = "$METABOLIC_dir/METABOLIC_template_and_database/hmm_table_template.txt";
- my $hmm_table_temp_2 = "$METABOLIC_dir/METABOLIC_template_and_database/hmm_table_template_2.txt"; 
- 
+ my $hmm_table_temp = "$db_dir/METABOLIC_template_and_database/hmm_table_template.txt";
+ my $hmm_table_temp_2 = "$db_dir/METABOLIC_template_and_database/hmm_table_template_2.txt";
+
  # The KEGG module information
- my $ko_module_table = "$METABOLIC_dir/METABOLIC_template_and_database/ko00002.keg";
- 
- # The KEGG module step db 
- my $ko_module_step_db = "$METABOLIC_dir/METABOLIC_template_and_database/kegg_module_step_db.txt";
- 
+ my $ko_module_table = "$db_dir/METABOLIC_template_and_database/ko00002.keg";
+
+ # The KEGG module step db
+ my $ko_module_step_db = "$db_dir/METABOLIC_template_and_database/kegg_module_step_db.txt";
+
  # The pathway information to draw element cycling diagrams and metabolic handoff
- my $R_pathways = "$METABOLIC_dir/METABOLIC_template_and_database/R_pathways.txt";
- my $R_mh_01 = "$METABOLIC_dir/METABOLIC_template_and_database/Sequential_transformations_01.txt";
- my $R_mh_02 = "$METABOLIC_dir/METABOLIC_template_and_database/Sequential_transformations_02.txt";
- my $R_mh_tsv = "$METABOLIC_dir/METABOLIC_template_and_database/Sequential-transformations.tsv";
- my $R_order_of_input_01 = "$METABOLIC_dir/METABOLIC_template_and_database/order_of_input_01.txt";
- my $R_order_of_input_02 = "$METABOLIC_dir/METABOLIC_template_and_database/order_of_input_02.txt";
- my $CAZy_map_address = "$METABOLIC_dir/METABOLIC_template_and_database/CAZy_map.txt";
- 
+ my $R_pathways = "$db_dir/METABOLIC_template_and_database/R_pathways.txt";
+ my $R_mh_01 = "$db_dir/METABOLIC_template_and_database/Sequential_transformations_01.txt";
+ my $R_mh_02 = "$db_dir/METABOLIC_template_and_database/Sequential_transformations_02.txt";
+ my $R_mh_tsv = "$db_dir/METABOLIC_template_and_database/Sequential-transformations.tsv";
+ my $R_order_of_input_01 = "$db_dir/METABOLIC_template_and_database/order_of_input_01.txt";
+ my $R_order_of_input_02 = "$db_dir/METABOLIC_template_and_database/order_of_input_02.txt";
+ my $CAZy_map_address = "$db_dir/METABOLIC_template_and_database/CAZy_map.txt";
+
  # The MW-score reaction table template
- my $MW_score_reaction_table = "$METABOLIC_dir/METABOLIC_template_and_database/MW-score_reaction_table.txt";
- 
+ my $MW_score_reaction_table = "$db_dir/METABOLIC_template_and_database/MW-score_reaction_table.txt";
+
  # The motif files to validate specific protein hits
- my $motif_file = "$METABOLIC_dir/METABOLIC_template_and_database/motif.txt";
- my $motif_pair_file = "$METABOLIC_dir/METABOLIC_template_and_database/motif.pair.txt";
+ my $motif_file = "$db_dir/METABOLIC_template_and_database/motif.txt";
+ my $motif_pair_file = "$db_dir/METABOLIC_template_and_database/motif.pair.txt";
 
 # The test option:
 if ($test eq "true"){
-	$input_genome_folder = "$METABOLIC_dir/METABOLIC_test_files/Guaymas_Basin_genome_files";
+	$input_genome_folder = "$test_files_dir/Guaymas_Basin_genome_files";
 	$output = "METABOLIC_out";
-	$omic_reads_parameters = "$METABOLIC_dir/METABOLIC_test_files/Reads_address.txt";
+	$omic_reads_parameters = "$test_files_dir/Reads_address.txt";
 }
 
 # To make sure the input taxonomy is right
@@ -867,7 +916,7 @@ while (<IN>){
 	chomp;
 	my $file = $_;
 	my ($gn_id) = $file =~ /^$input_protein_folder\/(.+?)\.faa/;
-	print OUT "hmmscan --domtblout $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out.dm --cpu 1 $METABOLIC_dir/dbCAN2/dbCAN-fam-HMMs.txt $file > $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out;";
+	print OUT "hmmscan --domtblout $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out.dm --cpu 1 $db_dir/dbCAN2/dbCAN-fam-HMMs.txt $file > $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out;";
 	print OUT "python $METABOLIC_dir/Accessory_scripts/hmmscan-parser-dbCANmeta.py $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out.dm > $output/intermediate_files/dbCAN2_Files/$gn_id.dbCAN2.out.dm.ps\n";
 }
 close IN;
@@ -953,7 +1002,7 @@ while (<IN>){
 	chomp;
 	my $file = $_;
 	my ($gn_id) = $file =~ /^$input_protein_folder\/(.+?)\.faa/;
-	print OUT "diamond blastp -d $METABOLIC_dir/MEROPS/pepunit.db -q $file -o $output/intermediate_files/MEROPS_Files/$gn_id.MEROPSout.m8 -k 1 -e 1e-10 --query-cover 80 --id 50 --quiet -p 1 2> /dev/null\n";
+	print OUT "diamond blastp -d $db_dir/MEROPS/pepunit.db -q $file -o $output/intermediate_files/MEROPS_Files/$gn_id.MEROPSout.m8 -k 1 -e 1e-10 --query-cover 80 --id 50 --quiet -p 1 2> /dev/null\n";
 }
 close IN;
 close OUT;
@@ -962,7 +1011,7 @@ close OUT;
 _run_parallel("$output/tmp_run_MEROPS.sh", $cpu_numbers); `rm $output/tmp_run_MEROPS.sh`;
 
 my %MEROPS_map; # MER id => all line
-open IN, "$METABOLIC_dir/MEROPS/pepunit.lib";
+open IN, "$db_dir/MEROPS/pepunit.lib";
 while (<IN>){
 	chomp;
 	if (/>/){
@@ -1830,6 +1879,149 @@ close OUT;
 
 
 ##Subroutines
+
+# Sanity-check that the expected database layout is present under $db_dir,
+# so a missing/misconfigured -db-dir fails fast with a clear message instead
+# of silently producing empty results deep into a run.
+sub _check_db_dir{
+	my ($dir) = @_;
+	my @required = (
+		"$dir/METABOLIC_hmm_db",
+		"$dir/kofam_database/profiles",
+		"$dir/kofam_database/ko_list",
+		"$dir/dbCAN2/dbCAN-fam-HMMs.txt",
+		"$dir/MEROPS/pepunit.db.dmnd",
+		"$dir/MEROPS/pepunit.lib",
+		"$dir/METABOLIC_template_and_database/hmm_table_template.txt",
+	);
+	my @missing = grep { !-e $_ } @required;
+	if (@missing){
+		die "The METABOLIC database directory ($dir) is missing expected files:\n"
+			.join("", map {"  - $_\n"} @missing)
+			."Set -db-dir/-database-directory (or the METABOLIC_DB_DIR environment variable) to a directory containing the METABOLIC databases, or run with -download-db to set one up.\n";
+	}
+}
+
+# Run a shell command, printing it first for transparency, and die with a
+# clear message (including the failing command) if it doesn't succeed.
+sub _run_cmd{
+	my ($cmd) = @_;
+	print "  \$ $cmd\n";
+	my $status = system($cmd);
+	if ($status != 0){
+		die "Command failed (exit code ".($status >> 8)."): $cmd\n";
+	}
+}
+
+# Fetch $source into $dest. $source may be an http(s)/ftp URL (downloaded with
+# curl) or a local file path (copied) -- see the -*-url/-*-source options.
+sub _fetch{
+	my ($source, $dest) = @_;
+	my $dest_dir = dirname($dest);
+	`mkdir -p "$dest_dir"`;
+	if ($source =~ /^(https?|ftp):\/\//){
+		_run_cmd("curl -fL -o \"$dest\" \"$source\"");
+	}else{
+		die "Source file not found: $source\n" if (!-e $source);
+		_run_cmd("cp \"$source\" \"$dest\"");
+	}
+}
+
+# The setup helper scripts (batch_hmmpress.pl etc.) are code, not a database,
+# so they stay bundled next to this script; extract them from the local .tgz
+# on first use if that hasn't happened yet.
+sub _ensure_accessory_scripts{
+	return if (-d "$METABOLIC_dir/Accessory_scripts");
+	if (-e "$METABOLIC_dir/Accessory_scripts.tgz"){
+		_run_cmd("tar -xzf \"$METABOLIC_dir/Accessory_scripts.tgz\" -C \"$METABOLIC_dir\"");
+	}else{
+		die "Accessory_scripts/ (or Accessory_scripts.tgz to extract it from) was not found next to this script at $METABOLIC_dir -- it is required for -download-db.\n";
+	}
+}
+
+# Fetch and extract a .tgz archive whose top-level entry is $target_dir into
+# the directory containing $target_dir, skipping if $target_dir already exists.
+sub _extract_archive_if_needed{
+	my ($label, $source, $target_dir) = @_;
+	if (-d $target_dir){
+		print "$label already present at $target_dir, skipping.\n";
+		return;
+	}
+	print "Setting up $label ...\n";
+	my $tmp_tgz = "$target_dir.download.tgz";
+	_fetch($source, $tmp_tgz);
+	_run_cmd("tar -xzf \"$tmp_tgz\" -C \"".dirname($target_dir)."\"");
+	unlink $tmp_tgz;
+	die "$label extraction did not produce the expected directory: $target_dir\n" if (!-d $target_dir);
+	print "$label is ready at $target_dir\n";
+}
+
+sub _setup_kofam_database{
+	my ($dir) = @_;
+	my $kofam_dir = "$dir/kofam_database";
+	if (-e "$kofam_dir/ko_list" and glob("$kofam_dir/profiles/*.h3m")){
+		print "KofamKOALA database already present at $kofam_dir, skipping.\n";
+		return;
+	}
+	print "Setting up KofamKOALA database ...\n";
+	`mkdir -p "$kofam_dir"`;
+	_fetch($kofam_ko_list_url, "$kofam_dir/ko_list.gz");
+	_run_cmd("gzip -df \"$kofam_dir/ko_list.gz\"");
+	_fetch($kofam_profiles_url, "$kofam_dir/profiles.tar.gz");
+	_run_cmd("tar -xzf \"$kofam_dir/profiles.tar.gz\" -C \"$kofam_dir\"");
+	unlink "$kofam_dir/profiles.tar.gz";
+	_fetch($all_module_ko_ids_source, "$kofam_dir/profiles/All_Module_KO_ids.txt");
+	_run_cmd("cd \"$kofam_dir/profiles\" && perl \"$METABOLIC_dir/Accessory_scripts/batch_hmmpress.pl\"");
+	print "KofamKOALA database is ready at $kofam_dir\n";
+}
+
+sub _setup_dbcan2_database{
+	my ($dir) = @_;
+	my $dbcan_dir = "$dir/dbCAN2";
+	if (-e "$dbcan_dir/dbCAN-fam-HMMs.txt.h3m"){
+		print "dbCAN2 database already present at $dbcan_dir, skipping.\n";
+		return;
+	}
+	print "Setting up dbCAN2 database ...\n";
+	`mkdir -p "$dbcan_dir"`;
+	_fetch($dbcan_hmm_url, "$dbcan_dir/dbCAN-fam-HMMs.txt");
+	_run_cmd("cd \"$dbcan_dir\" && perl \"$METABOLIC_dir/Accessory_scripts/batch_hmmpress_for_dbCAN2_HMMdb.pl\"");
+	print "dbCAN2 database is ready at $dbcan_dir\n";
+}
+
+sub _setup_merops_database{
+	my ($dir) = @_;
+	my $merops_dir = "$dir/MEROPS";
+	if (-e "$merops_dir/pepunit.db.dmnd"){
+		print "MEROPS database already present at $merops_dir, skipping.\n";
+		return;
+	}
+	print "Setting up MEROPS database ...\n";
+	`mkdir -p "$merops_dir"`;
+	_fetch($merops_url, "$merops_dir/pepunit.lib");
+	_run_cmd("cd \"$merops_dir\" && perl \"$METABOLIC_dir/Accessory_scripts/make_pepunit_db.pl\"");
+	print "MEROPS database is ready at $merops_dir\n";
+}
+
+# Download and set up the full METABOLIC database directory layout under $dir.
+# Every remote source has a -*-url/-*-source override (see OPTIONS), so this
+# can be re-pointed at internal mirrors or pre-staged files.
+sub _download_databases{
+	my ($dir) = @_;
+	$| = 1; # autoflush so progress is visible immediately, e.g. under `tee`
+	`mkdir -p "$dir"`;
+	print "[".strftime("%Y-%m-%d %H:%M:%S", localtime)."] Setting up METABOLIC databases in: $dir\n";
+
+	_ensure_accessory_scripts();
+	_extract_archive_if_needed("METABOLIC_hmm_db", $metabolic_hmm_db_source, "$dir/METABOLIC_hmm_db");
+	_extract_archive_if_needed("METABOLIC_template_and_database", $template_db_source, "$dir/METABOLIC_template_and_database");
+	_setup_kofam_database($dir);
+	_setup_dbcan2_database($dir);
+	_setup_merops_database($dir);
+
+	print "[".strftime("%Y-%m-%d %H:%M:%S", localtime)."] METABOLIC database setup finished: $dir\n";
+}
+
 sub parse_duration {
     use integer;
     sprintf("%02d:%02d:%02d", $_[0]/3600, $_[0]/60%60, $_[0]%60);
@@ -2005,7 +2197,7 @@ sub _get_Genome_coverge{
 		if ($test ne "true"){
 			$tmp_link = $tmp[0]."\t".$tmp[1];
 		}else{
-			$tmp_link = "$METABOLIC_dir/METABOLIC_test_files/METABOLIC_test_reads/".$tmp[0]."\t"."$METABOLIC_dir/METABOLIC_test_files/METABOLIC_test_reads/".$tmp[1];
+			$tmp_link = "$test_files_dir/METABOLIC_test_reads/".$tmp[0]."\t"."$test_files_dir/METABOLIC_test_reads/".$tmp[1];
 		}
 		$Reads{$tmp_link} = $i;
 		$i++;
@@ -2177,7 +2369,7 @@ sub _get_Genome_coverge_for_long_reads{
 		if ($test ne "true"){
 			$tmp_link = $_;
 		}else{
-			$tmp_link = "$METABOLIC_dir/METABOLIC_test_files/METABOLIC_test_reads/".$_;
+			$tmp_link = "$test_files_dir/METABOLIC_test_reads/".$_;
 		}
 		$Reads{$tmp_link} = $i;
 		$i++;
