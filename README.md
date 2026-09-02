@@ -19,9 +19,9 @@ Slides of introducing METABOLIC (for a C-DEBI series meeting presentation) were 
 (The carbon fixation pathway automated annotation gets updated - in Appendix)
 ### Updated usage options (Sept 2026, tested on Ubunutu 24.04 LTS)
 
-A few options have been added to remove paths that were hardcoded relative to the script's own location. Both are optional — if you omit them, METABOLIC behaves exactly as upstream does.
-`-db-dir` lets you point METABOLIC at a database directory anywhere on disk.
-`download-db` lets you downlaod and set the database in `-db-dir`.
+A few options have been added to remove paths that were hardcoded relative to the script's own location. Both are optional — if you omit them, METABOLIC behaves exactly as upstream does. <br>
+`-db-dir` lets you point METABOLIC at a database directory anywhere on disk. <br>
+`download-db` lets you downlaod and set the database in `-db-dir`. <br>
 `-gtdbtk-dir` lets you reuse an existing GTDB-Tk run
 
 
