@@ -49,8 +49,9 @@ use File::Basename;
         Takes a folder containing genome files to generate a profile of their metablic and biogeochemical functions
         
 =head1 USAGE       
-
-        perl METABOLIC-G.pl -t 40 -m-cutoff 0.75 -in Genome_proteins -kofam-db full -o METABOLIC_out
+		Before first use, set up the METABOLIC database by running -download-db option, or by downloading the database manually and pointing -db-dir to it. See the README for details.
+        
+		perl METABOLIC-G.pl -t 40 -m-cutoff 0.75 -in Genome_proteins -kofam-db full -o METABOLIC_out
 		(import genome proteins by users)
         
         perl METABOLIC-G.pl -t 40 -m-cutoff 0.75 -in-gn Genome_files -kofam-db full -o METABOLIC_out

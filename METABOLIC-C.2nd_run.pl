@@ -51,7 +51,9 @@ use File::Copy;
         
 =head1 USAGE       
 
-        perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in Genome_proteins -kofam-db full -r omic_reads_parameters.txt -o METABOLIC_out
+        Before first use, set up the METABOLIC database by running -download-db option, or by downloading the database manually and pointing -db-dir to it. See the README for details.
+
+		perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in Genome_proteins -kofam-db full -r omic_reads_parameters.txt -o METABOLIC_out
 		(When you also want to calculate genome coverages, you would have to add genome files with the same basename and the extention as ".fasta" in this folder)
         
         perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in-gn Genome_files -kofam-db full -r omic_reads_parameters.txt -o METABOLIC_out
