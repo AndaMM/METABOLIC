@@ -28,7 +28,7 @@ A few options have been added to remove paths that were hardcoded relative to th
 <br>
 <br>
 
-If you are using this program, please consider citing our paper, available at [Microbiome](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-021-01213-8):
+If you are using this program, please consider citing the original paper, available at [Microbiome](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-021-01213-8):
 ```
 Zhou, Z., Tran, P.Q., Breister, A.M. et al. METABOLIC: high-throughput profiling of microbial genomes for functional traits, metabolism, biogeochemistry, and community-scale functional networks. Microbiome 10, 33 (2022). https://doi.org/10.1186/s40168-021-01213-8
 ```
