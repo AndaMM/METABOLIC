@@ -240,6 +240,10 @@ if ($test eq "true"){
 	$gtdbtk_dir = "$test_files_dir/gtdbtk_Genome_files" if (!$gtdbtk_dir and -d "$test_files_dir/gtdbtk_Genome_files");
 }
 
+if (!$input_protein_folder and !$input_genome_folder){
+	die "Please provide an input folder with -in (a folder of genome protein/faa files) or -in-gn (a folder of genome fasta files).\n";
+}
+
 # GTDB-Tk is never run by this script -- it must always be run separately
 # beforehand, with its output directory passed via -gtdbtk-dir. This keeps
 # GTDB-Tk's own heavy dependency chain (and its GTDB reference database,
@@ -1202,9 +1206,9 @@ my %Genome_cov_constant = ();
 if ($omic_reads_parameters){
 	my %Genome_cov = ();
 	if ($sequencing_type eq 'illumina'){
-		%Genome_cov = _get_Genome_coverge($omic_reads_parameters,$input_genome_folder);
+		%Genome_cov = _get_Genome_coverge($omic_reads_parameters,$input_protein_folder);
 	}else{
-		%Genome_cov = _get_Genome_coverge_for_long_reads($omic_reads_parameters,$input_genome_folder);
+		%Genome_cov = _get_Genome_coverge_for_long_reads($omic_reads_parameters,$input_protein_folder);
 	}
 	%Genome_cov_constant = %Genome_cov;
 	
@@ -1883,7 +1887,7 @@ Total running time: $duration (hh:mm:ss)
 Input Reads: $omic_reads_parameters
 Reads type: $omic_reads_type
 Sequencing type: $sequencing_type
-Input Genome directory (nucleotides): $input_genome_folder
+Input Genome directory (nucleotides): @{[$input_genome_folder // 'N/A (protein input via -in)']}
 Number of Threads: $cpu_numbers
 Prodigal Method: $prodigal_method
 KOfam DB: $kofam_db_size

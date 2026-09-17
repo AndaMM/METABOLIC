@@ -205,6 +205,10 @@ if ($test eq "true"){
 	$output = "METABOLIC_out";
 }
 
+if (!$input_protein_folder and !$input_genome_folder){
+	die "Please provide an input folder with -in (a folder of genome protein/faa files) or -in-gn (a folder of genome fasta files).\n";
+}
+
 ## Main Body
 # The present time
 
