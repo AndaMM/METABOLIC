@@ -68,7 +68,7 @@ Or point `-db-dir` (or `$METABOLIC_DB_DIR`) at a database directory you've alrea
 perl METABOLIC-G.pl -db-dir /path/to/databases -in-gn /path/to/genomes -o METABOLIC_out
 ```
 
-3.2. Genomes + metagenomic reads, for community metabolism and coverage (`METABOLIC-C.pl`):
+3.2. Genomes + metagenomic reads, for community metabolism and coverage (`METABOLIC-C.pl`):<br>
 3.2.1. Run GTDB-Tk on your genomes (once per genome set) - in another GTDB-Tk environment
 
 ```
@@ -88,7 +88,6 @@ perl METABOLIC-C.pl -db-dir /path/to/databases -in-gn /path/to/genomes \
 perl METABOLIC-C.pl -db-dir /path/to/databases -test true -gtdbtk-dir /path/to/gtdbtk_out
 ```
 
-See `-help` on either script for the full option list. Press `q` to exit the help menu. Also check out the official wiki for this tool: https://github.com/AnantharamanLab/METABOLIC/wiki.
-
+See `-help` on either script for the full option list. Press `q` to exit the help menu.
 
 
