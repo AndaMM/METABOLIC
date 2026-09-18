@@ -17,11 +17,22 @@ This software enables the prediction of metabolic and biogeochemical functional 
 Slides of introducing METABOLIC (for a C-DEBI series meeting presentation) were provided here: (https://github.com/AnantharamanLab/METABOLIC/blob/master/METABOLIC_C-DEBI_slides.pdf) 
 
 (The carbon fixation pathway automated annotation gets updated - in Appendix)
+### Updated usage options (Sept 2026, tested on Ubuntu 24.04 LTS)
+
+A few options have been added to remove paths that were hardcoded relative to the script's own location, and GTDB-Tk is no longer run automatically. <br>
+`-db-dir` lets you point METABOLIC at a database directory anywhere on disk (defaults to the directory the script lives in, so existing setups keep working unchanged). You can also set this via the `METABOLIC_DB_DIR` environment variable instead. <br>
+`-download-db` downloads and sets up the databases into `-db-dir`, then exits without running an analysis. Safe to re-run — it skips any database that's already present. <br>
+`-test-files-dir` lets you point at the METABOLIC test dataset if you've placed it somewhere other than next to the script (the upstream Figshare bundle can only be downloaded via a browser, not the CLI, at the next URL: https://figshare.com/ndownloader/files/43500597). <br>
+`-gtdbtk-dir` **(required)** points METABOLIC-C.pl/METABOLIC-C.2nd_run.pl at the output of a `gtdbtk classify_wf` run you've done beforehand. These scripts no longer run GTDB-Tk themselves — GTDB-Tk has its own large, independently-versioned reference database and dependency chain, so it must always be run separately first, e.g.:
+```
+gtdbtk classify_wf --cpus <N> -x fasta --genome_dir path/to/genomes --skip_ani_screen --out_dir path/to/gtdbtk_out
+```
+
 
 <br>
 <br>
 
-If you are using this program, please consider citing our paper, available at [Microbiome](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-021-01213-8):
+If you are using this program, please consider citing the original paper, available at [Microbiome](https://microbiomejournal.biomedcentral.com/articles/10.1186/s40168-021-01213-8):
 ```
 Zhou, Z., Tran, P.Q., Breister, A.M. et al. METABOLIC: high-throughput profiling of microbial genomes for functional traits, metabolism, biogeochemistry, and community-scale functional networks. Microbiome 10, 33 (2022). https://doi.org/10.1186/s40168-021-01213-8
 ```

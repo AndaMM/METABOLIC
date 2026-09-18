@@ -33,7 +33,6 @@ dir.create(network.plots.folder)
 
 plot.folder <- network.plots.folder
 
-#R_input_table <- "/Users/patriciatran/Downloads/Metabolic_network_input.txt"
 table <- read.csv(R_input_table, header=T, sep="\t")
 
 #Change the column names
@@ -74,7 +73,7 @@ dev.off()
 
 
 # this makes a plot for each Taxonomic Group
-unique.taxo.groups <- unique(levels(table$Taxonomic.Group))
+unique.taxo.groups <- unique(as.character(table$Taxonomic.Group)) #updated as.character to avoid factor issues
 
 for (i in 1:length(unique.taxo.groups)){
   
