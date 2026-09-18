@@ -41,8 +41,54 @@ Zhou, Z., Tran, P.Q., Breister, A.M. et al. METABOLIC: high-throughput profiling
 
 ## Installing and using METABOLIC
 
-Please see the project home page for usage details and installation instructions: <br>
+For general background and full option reference, see the upstream project wiki: <br>
 https://github.com/AnantharamanLab/METABOLIC/wiki<br>
+(Note: the wiki doesn't cover this fork's `-db-dir`/`-download-db`/`-gtdbtk-dir` options above — use the quickstart below for those.)
+
+### 1. Set up the environment and activate it
+
+```
+conda env create -f env.yml
+```
+
+### 2. Set up the databases (once)
+
+```
+perl METABOLIC-C.pl -db-dir /path/to/databases -download-db
+```
+
+Or point `-db-dir` (or `$METABOLIC_DB_DIR`) at a database directory you've already built.
+
+
+
+### 3. Run METABOLIC
+
+3.1. Genomes only, no reads (`METABOLIC-G.pl`):
+```
+perl METABOLIC-G.pl -db-dir /path/to/databases -in-gn /path/to/genomes -o METABOLIC_out
+```
+
+3.2. Genomes + metagenomic reads, for community metabolism and coverage (`METABOLIC-C.pl`):
+3.2.1. Run GTDB-Tk on your genomes (once per genome set) - in another GTDB-Tk environment
+
+```
+gtdbtk classify_wf --cpus <N> -x fasta --genome_dir /path/to/genomes --skip_ani_screen --out_dir /path/to/gtdbtk_out
+```
+3.2.2. Run METABOLIC on your genomes + reads
+```
+perl METABOLIC-C.pl -db-dir /path/to/databases -in-gn /path/to/genomes \
+  -r omic_reads_parameters.txt -gtdbtk-dir /path/to/gtdbtk_out -o METABOLIC_out
+```
+
+`omic_reads_parameters.txt` is a CSV of `forward_reads.fastq,reverse_reads.fastq`, one pair per line.
+
+### 4. Try it on the bundled test dataset
+
+```
+perl METABOLIC-C.pl -db-dir /path/to/databases -test true -gtdbtk-dir /path/to/gtdbtk_out
+```
+
+See `-help` on either script for the full option list. Press `q` to exit the help menu. Also check out the official wiki for this tool: https://github.com/AnantharamanLab/METABOLIC/wiki.
 
 
 
