@@ -1,5 +1,5 @@
 # Changelog
-
+## Updated Sept 2026
 This documents the changes made in this fork on top of upstream
 [AnantharamanLab/METABOLIC](https://github.com/AnantharamanLab/METABOLIC), starting from the
 last unmodified upstream commit (`3e6a73f`, Jan 2025). It covers `METABOLIC-C.pl`,
