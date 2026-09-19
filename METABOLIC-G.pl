@@ -114,7 +114,7 @@ my $input_genome_folder; # Input microbial genome fasta files
 my $prodigal_method = "meta"; # The prodigal method to annotate orfs
 my $kofam_db_size = "full"; # The full kofam size
 my $output = `pwd`; # The output folder 
-my $version="METABOLIC-G.pl v4.0";
+my $version="METABOLIC-G.pl v4.1.0";
 my $test = "false";
 my $test_files_dir = "$METABOLIC_dir/METABOLIC_test_files"; # Directory containing the METABOLIC test dataset, used by -test true. Override if you downloaded it manually via a browser -- the upstream Figshare link cannot be fetched from the CLI.
 my $db_dir; # The directory containing the METABOLIC databases (defaults to $METABOLIC_dir below)

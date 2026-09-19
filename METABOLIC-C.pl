@@ -132,7 +132,7 @@ my $sequencing_type = "illumina"; # The sequencing type of input omics reads
 my $output = `pwd`; # The output folder 
 my $taxonomy = "phylum"; # The taxonomy level to calculate MW-score table
 my $gtdbtk_dir; # The output folder of a GTDB-Tk run performed beforehand
-my $version="METABOLIC-C.pl v4.0-patched";
+my $version="METABOLIC-C.pl v4.1.0";
 my $test = "false";
 my $test_files_dir = "$METABOLIC_dir/METABOLIC_test_files"; # Directory containing the METABOLIC test dataset, used by -test true. Override if you downloaded it manually via a browser -- the upstream Figshare link cannot be fetched from the CLI.
 my $db_dir; # The directory containing the METABOLIC databases (defaults to $METABOLIC_dir below)
