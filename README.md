@@ -45,7 +45,8 @@ For general background and full option reference, see the upstream project wiki:
 https://github.com/AnantharamanLab/METABOLIC/wiki<br>
 (Note: the wiki doesn't cover this fork's `-db-dir`/`-download-db`/`-gtdbtk-dir` options above — use the quickstart below for those.)
 
-### 1. Set up the environment and activate it
+### 1. Set up the environment and activate it<br>
+After cloning the repository locally, set up the environment and activate it.
 
 ```
 conda env create -f env.yml
