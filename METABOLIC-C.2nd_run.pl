@@ -51,18 +51,15 @@ use File::Copy;
         
 =head1 USAGE
 
-        Before first use, set up the METABOLIC database by running -download-db option, or by downloading the database manually and pointing -db-dir to it. See the README for details.
+	Before first use, set up the METABOLIC database by running -download-db option, or by downloading the database manually and pointing -db-dir to it. See the README for details.
 
-		METABOLIC-C.2nd_run.pl never runs GTDB-Tk itself -- GTDB-Tk is a separate, independently-versioned
-		dependency with its own large reference database, so it is always run beforehand in its own
-		environment, and its output directory is always passed in with -gtdbtk-dir/-gtdb (installation
-		instructions: https://ecogenomics.github.io/GTDBTk/installing/index.html):
-			gtdbtk classify_wf --cpus numer_of_CPUS -x fasta --genome_dir path/to/input/dir --skip_ani_screen --out_dir path/to/gtdbtk/output
+	METABOLIC-C.2nd_run.pl never runs GTDB-Tk itself -- GTDB-Tk is a separate, independently-versioned dependency with its own large reference database, so it is always run beforehand in its own environment, and its output directory is always passed in with -gtdbtk-dir/-gtdb (installation instructions: https://ecogenomics.github.io/GTDBTk/installing/index.html):
+	gtdbtk classify_wf --cpus numer_of_CPUS -x fasta --genome_dir path/to/input/dir --skip_ani_screen --out_dir path/to/gtdbtk/output
 
-		perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in Genome_proteins -kofam-db full -r omic_reads_parameters.txt -gtdbtk-dir /path/to/gtdbtk/output -o METABOLIC_out
-		(When you also want to calculate genome coverages, you would have to add genome files with the same basename and the extention as ".fasta" in this folder)
+	perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in Genome_proteins -kofam-db full -r omic_reads_parameters.txt -gtdbtk-dir /path/to/gtdbtk/output -o METABOLIC_out
+	(When you also want to calculate genome coverages, you would have to add genome files with the same basename and the extention as ".fasta" in this folder)
 
-        perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in-gn Genome_files -kofam-db full -r omic_reads_parameters.txt -gtdbtk-dir /path/to/gtdbtk/output -o METABOLIC_out
+	perl METABOLIC-C.pl -t 40 -m-cutoff 0.75  -in-gn Genome_files -kofam-db full -r omic_reads_parameters.txt -gtdbtk-dir /path/to/gtdbtk/output -o METABOLIC_out
 
 	perl METABOLIC-G.pl -test true
 		(use the 5 genomes to test the METABOLIC-C script; -gtdbtk-dir defaults to the pre-computed GTDB-Tk output bundled with the test dataset)
