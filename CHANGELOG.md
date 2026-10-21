@@ -1,4 +1,18 @@
 # Changelog
+## v4.1.1 (Oct 2026)
+*(`Accessory_scripts.tgz`, `env.yml`)*
+
+- Removed the unused `use Bio::Perl;` import from `Accessory_scripts/gff2fasta_mdf.pl`. Its
+  logic is unchanged (same 50-nt minimum length, same reverse-complementing of minus-strand
+  genes, same output), but it now runs with BioPerl 1.7.x (`perl-bioperl-core`) and current Perl.
+- `batch_hmmpress.pl`, `batch_hmmpress_for_dbCAN2_HMMdb.pl` and `make_pepunit_db.pl` now use
+  `#!/usr/bin/env perl` instead of `#!/usr/bin/perl`. The scripts always run them as `perl <script>`,
+  so this has no effect on a run.
+- Dropped the exact Perl pins (`perl=5.22.0.1`, `perl-bioperl=1.6.924`,
+  `perl-parallel-forkmanager=1.17`, `perl-statistics-descriptive=3.0612`) from `env.yml`; the
+  environment now uses unpinned `perl`, `perl-bioperl-core`, `perl-parallel-forkmanager` and
+  `perl-statistics-descriptive`.
+
 ## Updated Sept 2026
 This documents the changes made in this fork on top of upstream
 [AnantharamanLab/METABOLIC](https://github.com/AnantharamanLab/METABOLIC), starting from the
