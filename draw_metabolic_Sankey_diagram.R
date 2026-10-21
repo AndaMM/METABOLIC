@@ -62,7 +62,7 @@ alluvial.plot <- ggplot(as.data.frame(energy.flow),
        aes(y = Freq, axis1= Taxa, axis2 = Reaction, axis3 = Category)) +
   geom_alluvium(aes(fill = Taxa), width = 1/12)+
   geom_stratum(width = 1/12, fill = "white", color = "grey") +
-  geom_label(stat = "stratum", infer.label = TRUE) +
+  geom_label(stat = "stratum", aes(label = after_stat(stratum))) +
 # label.strata was deprecated so I changed it to infer.label
   scale_x_discrete(limits = c("Reaction", "Taxa","Category"), expand = c(.05, .05)) +
   #scale_fill_brewer(type = "qual", palette = "Set1") +

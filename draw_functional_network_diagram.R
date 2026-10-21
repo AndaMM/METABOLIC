@@ -45,6 +45,14 @@ library(tidyverse)
 
 library(tidygraph)
 
+# Edge-width scale built directly with ggplot2: ggraph's default scale passes the
+# `trans` argument, which ggplot2 >= 3.5.0 deprecates. Older ggplot2 keeps ggraph's scale.
+edge_width_scale <- if (packageVersion("ggplot2") >= "3.5.0") {
+  continuous_scale(aesthetics = "edge_width", palette = scales::rescale_pal(c(1, 6)))
+} else {
+  scale_edge_width_continuous()
+}
+
 my_graph <- table[,c(2,3,4,5)] %>% 
   graph_from_data_frame()
 
@@ -56,11 +64,16 @@ community.plot <- table[,c(2,3,4,5)] %>%
   ggraph(layout = "linear",circular = TRUE) +
   geom_edge_arc(alpha = .25, 
                  aes(width = Coverage.value.average., color=as.factor(Taxonomic.Group))) +
-  geom_node_point(aes(size = 0.02*deg), color = "black", alpha=0.75) +
+  edge_width_scale +
+  geom_node_point(aes(size = deg), color = "black", alpha=0.75) +
   geom_node_text(aes(label = name),  color="black", repel = TRUE)+
   #theme_graph()+
   labs(title = 'Metabolic connections within dataset', 
-       subtitle = 'No scaling')
+       subtitle = 'No scaling',
+       edge_colour = 'Taxonomic group',
+       edge_width = 'Average coverage',
+       size = 'Node degree') +
+  guides(edge_colour = guide_legend(override.aes = list(edge_alpha = 1, edge_width = 2)))
 
 #community.plot
 
@@ -88,6 +101,7 @@ for (i in 1:length(unique.taxo.groups)){
     ggraph(layout = "fr") +
     geom_edge_link(alpha = .50, 
                    aes(width = Coverage.value.average.)) +
+    edge_width_scale +
     geom_node_point(color = "black", size = 2) +
     geom_node_text(aes(label = name),  color="black", repel = TRUE)+
     theme_graph()+
